@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mein Tagebuch</title>
+<style>
+  body {
+    font-family: "Arial", sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #eef2f7;
+    color: #333;
+  }
+
+  header {
+    background-image: url("https://images.pexels.com/photos/340874/pexels-photo-340874.jpeg");
+    background-size: cover;
+    background-position: center;
+    color: white;
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  header h1 {
+    font-size: 3em;
+    margin: 0;
+    text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+    animation: bounce 2s infinite;
+  }
+
+  @keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+    40% {transform: translateY(-20px);}
+    60% {transform: translateY(-10px);}
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+  }
+
+  .editable-box {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fdfdfd;
+    font-size: 16px;
+    line-height: 1.5;
+    box-sizing: border-box;
+  }
+
+  .editable-box:empty:before {
+    content: attr(placeholder);
+    color: #aaa;
+  }
+
+  button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    background-color: #3498db;
+    color: white;
+    transition: background-color 0.3s;
+    margin: 5px;
+  }
+
+  button:hover { background-color: #2980b9; }
+
+  #logoutButton {
+    float: right;
+    background-color: #e74c3c;
+  }
+  #logoutButton:hover { background-color: #c0392b; }
+
+  .footer-image {
+    margin-top: 30px;
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  #output { margin-top: 20px; }
+
+  #loginContainer, #registerContainer, #resetContainer {
+    max-width: 400px;
+    margin: 50px auto;
+    text-align: center;
+    padding: 20px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  input {
+    width: 70%;
+    padding: 10px;
+    margin-bottom: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+
+  .password-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 70%;
+  }
+
+  .password-wrapper input { width: 100%; }
+  .password-wrapper span {
+    position: absolute;
+    right: 10px;
+    top: 12px;
+    cursor: pointer;
+    font-size: 18px;
+    user-select: none;
+    color: #555;
+  }
+
+  #timer { font-weight: bold; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Mein Tagebuch</h1>
+</header>
+
+<!-- Registrierung -->
+<div id="registerContainer">
+  <h2>Registrieren</h2>
+  <input type="email" id="registerEmail" placeholder="Email" value="alexgerman2909@gmail.com" />
+  <div class="password-wrapper">
+    <input type="password" id="registerPassword" placeholder="Passwort" />
+    <span id="toggleRegisterPassword">&#128065;</span>
+  </div>
+  <button id="registerButton">Konto erstellen</button>
+  <p id="registerMessage" style="color:red;"></p>
+  <p>Bereits ein Konto? <button id="showLogin">Hier einloggen</button></p>
+</div>
+
+<!-- Login -->
+<div id="loginContainer" style="display:none;">
+  <h2>Login</h2>
+  <input type="email" id="loginEmail" placeholder="Email" />
+  <div class="password-wrapper">
+    <input type="password" id="loginPassword" placeholder="Passwort" />
+    <span id="toggleLoginPassword">&#128065;</span>
+  </div>
+  <button id="loginButton">Einloggen</button>
+  <button id="forgotPasswordButton" style="background-color:#f39c12;">Passwort vergessen?</button>
+  <p id="loginMessage" style="color:red;"></p>
+  <p>Kein Konto? <button id="showRegister">Registrieren</button></p>
+</div>
+
+<!-- Passwort zurücksetzen -->
+<div id="resetContainer" class="container" style="display:none;">
+  <h2>Passwort zurücksetzen</h2>
+  <p id="resetMessage">Wir haben dir einen 6-stelligen Code an deine E-Mail gesendet!</p>
+  <input type="text" id="codeInput" placeholder="6-stelliger Code" maxlength="6"/>
+  <p id="timer" style="color:red;"></p>
+  <input type="password" id="newPassword" placeholder="Neues Passwort"/>
+  <button id="resetButton">Neues Passwort setzen</button>
+  <p id="resetInfo" style="color:red;"></p>
+</div>
+
+<!-- Tagebuch -->
+<div id="tagebuchContainer" class="container" style="display:none;">
+  <button id="logoutButton">Logout</button>
+  <h2>Erzähle mir von deinem Tag:</h2>
+
+  <div id="editable1" contenteditable="true" class="editable-box" placeholder="Wie war dein Tag Heute so..."></div>
+  <div id="editable2" contenteditable="true" class="editable-box" placeholder="Gute Erfahrungen..."></div>
+  <div id="editable3" contenteditable="true" class="editable-box" placeholder="Schlechte Erfahrungen..."></div>
+
+  <button id="saveButton">Inhalt anzeigen</button>
+  <button id="pdfButton">Als PDF speichern</button>
+
+  <div id="output"></div>
+  <img id="footerImg" class="footer-image" src="https://images.pexels.com/photos/414171/pexels-photo-414171.jpeg" alt="Schönes Bild"/>
+</div>
+
+<!-- jsPDF Bibliothek -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+  // Elemente
+  const registerContainer = document.getElementById("registerContainer");
+  const loginContainer = document.getElementById("loginContainer");
+  const showLogin = document.getElementById("showLogin");
+  const showRegister = document.getElementById("showRegister");
+  const registerButton = document.getElementById("registerButton");
+  const loginButton = document.getElementById("loginButton");
+  const registerMessage = document.getElementById("registerMessage");
+  const loginMessage = document.getElementById("loginMessage");
+  const tagebuchContainer = document.getElementById("tagebuchContainer");
+  const logoutButton = document.getElementById("logoutButton");
+  const forgotPasswordButton = document.getElementById("forgotPasswordButton");
+  const resetContainer = document.getElementById("resetContainer");
+  const codeInput = document.getElementById("codeInput");
+  const newPassword = document.getElementById("newPassword");
+  const resetButton = document.getElementById("resetButton");
+  const resetInfo = document.getElementById("resetInfo");
+  const timerElem = document.getElementById("timer");
+
+  let generatedCode = "";
+  let timerInterval;
+
+  // Passwort anzeigen/verstecken
+  const toggleRegisterPassword = document.getElementById("toggleRegisterPassword");
+  const registerPassword = document.getElementById("registerPassword");
+  toggleRegisterPassword.addEventListener("click", ()=>{ registerPassword.type = registerPassword.type === "password" ? "text" : "password"; });
+
+  const toggleLoginPassword = document.getElementById("toggleLoginPassword");
+  const loginPassword = document.getElementById("loginPassword");
+  toggleLoginPassword.addEventListener("click", ()=>{ loginPassword.type = loginPassword.type === "password" ? "text" : "password"; });
+
+  // Wechsel Login <-> Registrierung
+  showLogin.addEventListener("click", ()=> { registerContainer.style.display="none"; loginContainer.style.display="block"; });
+  showRegister.addEventListener("click", ()=> { loginContainer.style.display="none"; registerContainer.style.display="block"; });
+
+  // Registrierung
+  registerButton.addEventListener("click", ()=>{
+    const email = document.getElementById("registerEmail").value;
+    const pass = registerPassword.value;
+    if(email && pass){
+      localStorage.setItem("tagebuch_user_email", email);
+      localStorage.setItem("tagebuch_user_pass", pass);
+      registerMessage.style.color="green";
+      registerMessage.textContent = "Konto erstellt! Bitte einloggen.";
+      setTimeout(()=>{ registerContainer.style.display="none"; loginContainer.style.display="block"; registerMessage.textContent=""; },1500);
+    } else { registerMessage.style.color="red"; registerMessage.textContent = "Bitte Email und Passwort eingeben!"; }
+  });
+
+  // Login
+  loginButton.addEventListener("click", ()=>{
+    const email = document.getElementById("loginEmail").value;
+    const pass = loginPassword.value;
+    const storedEmail = localStorage.getItem("tagebuch_user_email");
+    const storedPass = localStorage.getItem("tagebuch_user_pass");
+    if(email === storedEmail && pass === storedPass){
+      loginContainer.style.display="none";
+      tagebuchContainer.style.display="block";
+    } else { loginMessage.textContent = "Falsche Email oder Passwort!"; }
+  });
+
+  // Passwort vergessen
+  forgotPasswordButton.addEventListener("click", ()=>{
+    loginContainer.style.display="none";
+    resetContainer.style.display="block";
+
+    generatedCode = Math.floor(100000 + Math.random()*900000).toString();
+    console.log("Code (Simulation):", generatedCode);
+    alert("Simulierter E-Mail-Code: " + generatedCode);
+
+    let timeLeft = 5 * 60;
+    timerInterval = setInterval(()=>{
+      const minutes = Math.floor(timeLeft/60);
+      const seconds = timeLeft%60;
+      timerElem.textContent = `Code gültig für: ${minutes}:${seconds<10?'0':''}${seconds} Minuten`;
+      timeLeft--;
+      if(timeLeft < 0){ clearInterval(timerInterval); timerElem.textContent="Code abgelaufen!"; generatedCode=""; }
+    },1000);
+  });
+
+  // Neues Passwort setzen
+  resetButton.addEventListener("click", ()=>{
+    if(codeInput.value === generatedCode){
+      localStorage.setItem("tagebuch_user_pass", newPassword.value);
+      resetInfo.style.color="green";
+      resetInfo.textContent = "Passwort erfolgreich geändert! Bitte einloggen.";
+      clearInterval(timerInterval);
+      setTimeout(()=>{
+        resetContainer.style.display="none";
+        loginContainer.style.display="block";
+        codeInput.value="";
+        newPassword.value="";
+        resetInfo.textContent="";
+      },2000);
+    } else {
+      resetInfo.style.color="red";
+      resetInfo.textContent = "Falscher oder abgelaufener Code!";
+    }
+  });
+
+  // Logout
+  logoutButton.addEventListener("click", ()=>{
+    tagebuchContainer.style.display="none";
+    loginContainer.style.display="block";
+  });
+
+  // Tagebuch & PDF
+  const editable1 = document.getElementById("editable1");
+  const editable2 = document.getElementById("editable2");
+  const editable3 = document.getElementById("editable3");
+  const saveButton = document.getElementById("saveButton");
+  const pdfButton = document.getElementById("pdfButton");
+  const output = document.getElementById("output");
+  const footerImg = document.getElementById("footerImg");
+
+  saveButton.addEventListener("click", () => {
+    const content1 = editable1.innerHTML.trim();
+    const content2 = editable2.innerHTML.trim();
+    const content3 = editable3.innerHTML.trim();
+
+    localStorage.setItem("tagebuch_content1", content1);
+    localStorage.setItem("tagebuch_content2", content2);
+    localStorage.setItem("tagebuch_content3", content3);
+
+    if(content1||content2||content3){
+      output.innerHTML = `<h3>Dein eingegebener Inhalt:</h3>
+        <p><strong>Wie war dein Tag:</strong> ${content1||"Kein Inhalt"}</p>
+        <p><strong>Gute Erfahrungen:</strong> ${content2||"Kein Inhalt"}</p>
+        <p><strong>Schlechte Erfahrungen:</strong> ${content3||"Kein Inhalt"}</p>`;
+    } else { output.innerHTML = '<p style="color:red;">Bitte fülle mindestens eines der Felder aus.</p>'; }
+  });
+
+  window.addEventListener("load", ()=>{
+    editable1.innerHTML = localStorage.getItem("tagebuch_content1") || "";
+    editable2.innerHTML = localStorage.getItem("tagebuch_content2") || "";
+    editable3.innerHTML = localStorage.getItem("tagebuch_content3") || "";
+  });
+
+  pdfButton.addEventListener("click", async () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const content1 = editable1.innerText.trim();
+    const content2 = editable2.innerText.trim();
+    const content3 = editable3.innerText.trim();
+
+    const now = new Date();
+    const dateString = now.toLocaleDateString() + " " + now.toLocaleTimeString();
+
+    doc.setFillColor(245,245,255);
+    doc.rect(0,0,210,297,"F");
+
+    doc.setFontSize(20);
+    doc.setTextColor(50,50,150);
+    doc.text("Mein Tagebuch",105,20,null,null,"center");
+
+    doc.setFontSize(12);
+    doc.setTextColor(80,80,80);
+    doc.text("Datum & Uhrzeit: " + dateString, 10, 30);
+
+    doc.setDrawColor(100,100,200);
+    doc.setLineWidth(0.5);
+    doc.line(10,35,200,35);
+
+    let y=45;
+    doc.setFontSize(14); doc.setTextColor(50,50,150);
+    doc.text("Wie war dein Tag:",10,y); y+=7;
+    doc.setFontSize(12); doc.setTextColor(0,0,0);
+    doc.text(content1||"Kein Inhalt",10,y); y+=20;
+
+    doc.setFontSize(14); doc.setTextColor(50,150,50);
+    doc.text("Gute Erfahrungen:",10,y); y+=7;
+    doc.setFontSize(12); doc.setTextColor(0,0,0);
+    doc.text(content2||"Kein Inhalt",10,y); y+=20;
+
+    doc.setFontSize(14); doc.setTextColor(200,50,50);
+    doc.text("Schlechte Erfahrungen:",10,y); y+=7;
+    doc.setFontSize(12); doc.setTextColor(0,0,0);
+    doc.text(content3||"Kein Inhalt",10,y);
+
+    const imgData = await toBase64(footerImg.src);
+    doc.addImage(imgData,"JPEG",10,y+=40,190,70);
+
+    doc.save(`Tagebuch_${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}_${now.getHours()}-${now.getMinutes()}.pdf`);
+  });
+
+  function toBase64(url) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.setAttribute("crossOrigin","anonymous");
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img,0,0);
+        resolve(canvas.toDataURL("image/jpeg"));
+      };
+      img.onerror = error => reject(error);
+      img.src = url;
+    });
+  }
+</script>
+
+</body>
+</html>
